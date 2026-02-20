@@ -33,7 +33,16 @@ async def fetch_rates() -> None:
             payload = resp.json()
             request_record.status_code = resp.status_code
 
-            filtered_rates = {s: payload["rates"][s] for s in symbols if s in payload.get("rates", {})}
+            all_rates = payload.get("rates")
+            if not all_rates:
+                request_record.error_type = "empty_response"
+                request_record.error_message = "API returned response without rates"
+                session.add(request_record)
+                logger.warning("API response missing rates: %s", payload)
+                await session.commit()
+                return
+
+            filtered_rates = {s: all_rates[s] for s in symbols if s in all_rates}
             filtered_payload = {
                 "base": payload.get("base_code", settings.base),
                 "rates": filtered_rates,
