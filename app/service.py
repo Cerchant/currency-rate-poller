@@ -48,24 +48,35 @@ async def fetch_rates() -> None:
                 payload=filtered_payload,
             )
             session.add(response_record)
-            logger.info("Rates fetched: status=%d", resp.status_code)
+            logger.info(
+                "Rates fetched successfully: status=%d, rates_count=%d",
+                resp.status_code,
+                len(filtered_rates),
+            )
 
         except httpx.TimeoutException as exc:
             request_record.error_type = "timeout"
             request_record.error_message = str(exc)
             session.add(request_record)
-            logger.error("Timeout: %s", exc)
+            logger.error("Timeout fetching rates from %s: %s", url, exc)
 
         except httpx.ConnectError as exc:
             request_record.error_type = "connection_error"
             request_record.error_message = str(exc)
             session.add(request_record)
-            logger.error("Connection error: %s", exc)
+            logger.error("Connection error fetching rates: %s", exc)
+
+        except httpx.HTTPStatusError as exc:
+            request_record.status_code = exc.response.status_code
+            request_record.error_type = "http_error"
+            request_record.error_message = str(exc)
+            session.add(request_record)
+            logger.error("HTTP %d error: %s", exc.response.status_code, exc)
 
         except Exception as exc:
             request_record.error_type = "unknown"
             request_record.error_message = str(exc)
             session.add(request_record)
-            logger.error("Unexpected error: %s", exc)
+            logger.error("Unexpected error fetching rates: %s", exc)
 
         await session.commit()
