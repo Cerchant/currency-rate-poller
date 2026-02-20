@@ -1,6 +1,6 @@
 # Currency Rate Poller
 
-Микросервис на FastAPI для периодического опроса курсов валют через внешний API ([exchangerate-api.com](https://www.exchangerate-api.com/)) и сохранения истории запросов в PostgreSQL.
+Микросервис на FastAPI для периодического опроса курсов валют через внешний API ([open.er-api.com](https://open.er-api.com/)) и сохранения истории запросов в PostgreSQL.
 
 ## Стек технологий
 
